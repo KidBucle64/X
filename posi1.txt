@@ -1,0 +1,184 @@
+apache hhtpclient 4.5.14
+apache commons login 1.2
+apache httpcore 4.4.16
+commons.io 2.15.0
+json in java 2023
+
+
+---------------------------------
+<?php
+
+class Conexion{
+
+    public function Conectar(){
+
+        define("host","localhost");
+        define("user","root");
+        define("pwd","");
+        define("db","yayo");
+
+        $opc=array(PDO::MYSQL_ATTR_INIT_COMMAND>'SET NAMES utf8');
+
+        try{
+
+            $conexion=new PDO("mysql:host=".host.";dbname=".db,user,pwd,$opc);
+            return $conexion;
+        }catch(PDOException $e){
+
+            die("Error en la base de datos:".$e->getMessage());
+        }
+
+    }
+
+}
+?>
+
+----api
+
+<?php
+
+$opc=$_SERVER["REQUEST_METHOD"];
+
+include_once("conexion.php");
+
+include_once("buscar.php");
+
+
+switch($opc){
+
+   case 'GET':  
+        //CrudS::mostrarP();    
+        $busqueda = $_GET['n_curso'];
+        $busqueda1 = $_GET['n_paralelo'];
+        CrudB::buscarE($busqueda,$busqueda1);
+    break;
+}
+
+
+?>
+----------------buscar
+
+<?php
+
+include_once("conexion.php");
+
+class CrudB{
+    public static function buscarE($n_curso,$n_paralelo){
+        $objeto= new Conexion();
+        $conexion=$objeto->Conectar();
+        $consulta="SELECT * FROM estudiantes WHERE curso='$n_curso' AND paralelo='$n_paralelo'";
+        $resultado= $conexion->prepare($consulta);
+        $resultado->execute();
+        $data= $resultado->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($data);
+
+    }
+
+}
+
+?>
+
+
+------
+
+public class Estudiante {
+    
+    String cedula,nombre,apellido,curso,paralelo;
+
+--------------------Api
+
+public class Api {
+    private List<Estudiante> estudiantes = new ArrayList<>();
+
+    public List<Estudiante> GET(String cursoNombre, String paraleloNombre) {
+        estudiantes.clear();
+
+        try {
+
+            String url = "http://localhost/Quinto/X/api.php?n_curso=" + cursoNombre + "&n_paralelo=" + paraleloNombre;
+            HttpClient httpClient = HttpClients.createDefault();
+            HttpGet request = new HttpGet(url);
+            HttpResponse response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                System.out.println("Error al realizar la solicitud HTTP. Código: " + response.getStatusLine().getStatusCode());
+                return estudiantes;  // Retorna la lista vacía en caso de error
+            }
+
+            String responseBody = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+            JSONArray jsonArray = new JSONArray(responseBody);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String cedula = jsonObject.getString("cedula");
+                String nombre = jsonObject.getString("nombre");
+                String apellido = jsonObject.getString("apellido");
+                String curso = jsonObject.getString("curso");
+                String paralelo = jsonObject.getString("paralelo");
+
+                Estudiante estudiante = new Estudiante(cedula, nombre, apellido, curso, paralelo);
+                estudiantes.add(estudiante);
+            }
+        } catch (IOException e) {
+            System.out.println("Error en el método GET: " + e.getMessage());
+        }
+
+        return estudiantes;
+    }
+    
+}
+
+-----------------Imain
+
+
+private Api api;
+    
+    public Imain() {
+    initComponents();
+        api = new Api();  
+
+        btnBuscar.setAction(new AbstractAction("Buscar") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                String n_curso = txtCurso.getText();
+                String n_paralelo = txtParalelo.getText();
+
+               
+                List<Estudiante> resultadoBusqueda = api.GET(n_curso, n_paralelo);
+
+                mostrarEnTabla(resultadoBusqueda);
+            }
+        });
+        
+    }
+
+    private void mostrarEnTabla(List<Estudiante> estudiantes) {
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("Cédula");
+        model.addColumn("Nombre");
+        model.addColumn("Apellido");
+        model.addColumn("Curso");
+        model.addColumn("Paralelo");
+
+        for (Estudiante estudiante : estudiantes) {
+            model.addRow(new Object[]{
+                estudiante.getCedula(),
+                estudiante.getNombre(),
+                estudiante.getApellido(),
+                estudiante.getCurso(),
+                estudiante.getParalelo()
+            });
+        }
+
+        jTabla.setModel(model);
+    }
+
+---------------------------------------------------
+
+
+
+
+
+
+

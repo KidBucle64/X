@@ -1,0 +1,291 @@
+<?php
+
+class Conexion{
+
+public function Conectar(){
+
+
+    define("host","localhost");
+    define("usuario","root");
+    define("psw","");
+    define("db","quinto");
+    
+    //$conexion=new PDO("mysql:host=$host;dbname=$db_name,$usuario,$contrasena");
+
+    $opc=array(PDO::MYSQL_ATTR_INIT_COMMAND>'SET NAMES utf8');
+    
+    try{
+        $conexion=new PDO("mysql:host=".host.";dbname=".db,usuario,psw,$opc);
+        return $conexion;
+        //die("OK");
+    
+    }catch(PDOException $e){
+        die("Error en la conexion".$e->getMessage());
+    
+    }
+
+}
+
+}
+
+?>
+
+---------------------------------
+
+<?php
+
+include_once("conexion.php");
+
+class CrudS{
+
+public static function obtenerEstudiantes(){
+
+    $obj=new conexion();
+    $conectar=$obj->Conectar();
+    $sql="SELECT * FROM estudiante";
+    $resultado=$conectar->prepare($sql);
+    $resultado->execute();
+
+    $data=$resultado->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($data);
+}
+
+}
+
+
+?>
+
+------------------------------------------------
+
+<?php
+
+class CrudI{
+
+public static function insertarEstudiantes(){
+
+    $cedula=$_POST["cedula"];
+    $nombre=$_POST["nombre"];
+    $apellido=$_POST["apellido"];
+    $direccion=$_POST["direccion"];
+    $telefono=$_POST["telefono"];
+
+    $obj=new conexion();
+    $conectar=$obj->Conectar();
+
+    $sql="INSERT INTO estudiante(cedula,nombre,apellido,direccion,telefono) VALUES('$cedula','$nombre','$apellido','$direccion','$telefono')";
+
+    $resultado=$conectar->prepare($sql);
+    $resultado->execute();
+
+    echo json_encode($_POST);
+
+    $conectar->commit();
+
+}
+
+}
+
+
+?>
+
+---------------------------------------------------
+
+<?php
+
+include_once("conexion.php");
+
+class crudU{
+
+public static function Update($cedula,$nombre,$apellido,$direccion,$telefono){
+
+    $obj=new conexion();
+    $conectar=$obj->Conectar();
+    $sql="UPDATE estudiante SET nombre='$nombre', apellido='$apellido', direccion='$direccion', telefono='$telefono' WHERE cedula='$cedula'";
+    $resultado=$conectar->prepare($sql);
+    $resultado->execute();
+
+    echo json_encode($resultado);
+
+    $conectar->commit();
+
+}
+
+}
+
+?>
+
+----------------------------------
+
+<?php
+
+include_once("conexion.php");
+
+class crudD{
+
+    public static function eliminarEstudiantes($cedula){
+
+        $obj=new conexion();
+        $conectar=$obj->Conectar();
+
+        $sql="DELETE FROM estudiante WHERE cedula='$cedula'";
+
+        $resultado=$conectar->prepare($sql);
+
+        $resultado->execute();
+
+        echo json_encode($resultado);
+
+        $conectar->commit();
+
+    }
+}
+
+
+?>
+--------------------------------------------------
+
+
+public class Api {
+     private  List<Estudiante> estudiantes = new ArrayList<>();
+     
+    public List<Estudiante> GET() {
+        estudiantes.clear();
+        
+        try {
+            HttpClient httpClient = HttpClients.createDefault();
+            HttpGet request = new HttpGet("http://localhost/Quinto/api.php");
+            HttpResponse response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                System.out.println("Error al realizar la solicitud HTTP. Código: " + response.getStatusLine().getStatusCode());
+                return estudiantes;  // Retorna la lista vacía en caso de error
+            }
+
+            String responseBody = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+            JSONArray jsonArray = new JSONArray(responseBody);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String cedula = jsonObject.getString("cedula");
+                String nombre = jsonObject.getString("nombre");
+                String apellido = jsonObject.getString("apellido");
+                String direccion = jsonObject.getString("direccion");
+                String telefono = jsonObject.getString("telefono");
+
+                Estudiante estudiante = new Estudiante(cedula, nombre, apellido, direccion, telefono);
+                estudiantes.add(estudiante);
+            }
+        } catch (IOException e) {
+            System.out.println("Error en el método GET: " + e.getMessage());
+        }
+
+        return estudiantes;
+    }
+    
+    
+    
+     public void insertar(String cedula , String nombre , String apellido , String telefono , String direccion) {
+        try{
+            String url = "http://localhost/Quinto/api.php";
+            HttpClient cliente = HttpClientBuilder.create().build();
+            HttpPost post = new HttpPost(url);
+            ArrayList<BasicNameValuePair> parametros = new ArrayList<BasicNameValuePair>();
+            parametros.add(new BasicNameValuePair("cedula",cedula));
+            parametros.add(new BasicNameValuePair("nombre",nombre));
+            parametros.add(new BasicNameValuePair("apellido",apellido));
+            parametros.add(new BasicNameValuePair("direccion",direccion));
+            parametros.add(new BasicNameValuePair("telefono",telefono));
+            post.setEntity(new UrlEncodedFormEntity(parametros));
+            cliente.execute(post);
+         //   mostrarDatos();
+        }catch(Exception e){
+            System.out.println("Error  : "+e);
+        }
+        
+    }
+     
+    public void editar(String cedula , String nombre , String apellido , String telefono , String direccion) {
+        try{
+        String apiUrl="http://localhost/Quinto/api.php";
+        String urlParametros="cedula="+cedula+"&nombre="+nombre+"&apellido="+apellido+"&direccion="+direccion+"&telefono="+telefono;
+        
+        URL url = new URL(apiUrl+"?"+urlParametros);
+        HttpURLConnection connection =
+                    (HttpURLConnection) url.openConnection();
+           connection.setRequestMethod("PUT");
+           connection.getResponseCode();
+       
+        
+        
+        }catch(Exception e){
+            
+        }
+    }
+    
+       public void eliminar(String cedula) {
+        try{
+        String apiUrl="http://localhost/Quinto/api.php";
+        String urlParametros="cedula="+cedula;
+        
+        URL url = new URL(apiUrl+"?"+urlParametros);
+        HttpURLConnection connection =
+                    (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
+           connection.getResponseCode();
+   
+        
+        
+        }catch(Exception e){
+            
+        }
+    }
+}
+
+-------------------------------------------------------------------------------------------------------------
+
+DefaultTableModel modelo=new DefaultTableModel();
+
+    Api api = new Api();
+    public Imain() {
+        initComponents();
+        cargarTextos();
+        llenarTabla((ArrayList<Estudiante>) api.GET());
+    }
+    
+    public void llenarTabla(ArrayList<Estudiante> lista){
+   modelo= (DefaultTableModel) jTblEstudiantes.getModel();
+        modelo.setRowCount(0);
+        for (Estudiante estudiante : lista) {
+            // Agregar una fila a la tabla con los datos de la persona
+            modelo.addRow(new Object[]{estudiante.getCedula(), estudiante.getNombre(), estudiante.getApellido(), estudiante.getDireccion(), estudiante.getTelefono()});
+        }
+    }
+    
+     public void cargarTextos(){
+        jTblEstudiantes.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            if(jTblEstudiantes.getSelectedRow() != -1){
+                int fila = jTblEstudiantes.getSelectedRow();
+                txtCedula.setText(jTblEstudiantes.getValueAt(fila, 0).toString());
+                txtNombre.setText(jTblEstudiantes.getValueAt(fila, 1).toString());
+                txtApellido.setText(jTblEstudiantes.getValueAt(fila, 2).toString());
+                txtDireccion.setText(jTblEstudiantes.getValueAt(fila, 3).toString());
+                txtTelefono.setText(jTblEstudiantes.getValueAt(fila, 4).toString());
+            }
+        });
+     }
+
+ ----@SuppressWarnings("unchecked")---
+
+jbtnEliminar
+api.eliminar(txtCedula.getText());
+            llenarTabla((ArrayList<Estudiante>) api.GET());
+
+jbtnInsertar
+       api.insertar(txtCedula.getText(), txtNombre.getText(),txtApellido.getText(),txtDireccion.getText(), txtTelefono.getText());
+       llenarTabla((ArrayList<Estudiante>) api.GET());
+
+jbtnActualizar
+      api.editar(txtCedula.getText(),txtNombre.getText(),txtApellido.getText(),txtTelefono.getText(),txtDireccion.getText());
+      llenarTabla((ArrayList<Estudiante>) api.GET());
+
+
