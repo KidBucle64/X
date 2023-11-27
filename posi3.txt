@@ -1,0 +1,217 @@
+
+
+en APP servicios
+
+--api--
+
+<?php
+
+$opc=$_SERVER["REQUEST_METHOD"];
+
+include_once("conexion.php");
+
+include_once("buscar.php");
+
+
+switch($opc){
+
+   case 'GET':  
+        //CrudS::mostrarP();    
+        $busqueda = $_GET['n_bodega'];
+        CrudB::buscarP($busqueda);
+    break;
+}
+
+
+?>
+
+--buscar--
+
+<?php
+include_once("conexion.php");
+class CrudB{
+  public static function buscarP($busqueda){
+        include_once 'conexion.php';
+        $objeto= new Conexion();
+        $conexion=$objeto->Conectar();
+	      $consulta="SELECT productos.* FROM productos WHERE productos.bodega_id LIKE '%$busqueda%'";
+        $resultado= $conexion->prepare($consulta);
+        $resultado->execute();
+        $data= $resultado->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($data);
+    }
+}
+?>
+
+--conexion--
+
+<?php
+
+class Conexion{
+
+    public function Conectar(){
+
+        define("host","localhost");
+        define("user","root");
+        define("psw","");
+        define("db","comercial");
+
+        $opc=array(PDO::MYSQL_ATTR_INIT_COMMAND > 'SET NAMES utf8');
+
+        try{
+            $conexion=new PDO("mysql:host=".host.";dbname=".db,user,psw,$opc);
+            return $conexion;
+        }catch(PDOException $e){
+            die("Error en la conexion".$e->getMessage());
+
+        }
+
+
+
+    }
+}
+
+
+
+?>
+
+
+------------------------------------------
+
+
+
+-- Crear la tabla de bodegas
+CREATE TABLE bodegas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255)
+);
+
+
+-- Crear la tabla de productos
+CREATE TABLE productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255),
+    precio DECIMAL(10, 2),
+    cantidad INT,
+    bodega_id INT,
+    FOREIGN KEY (bodega_id) REFERENCES bodegas(id)
+);
+
+
+----------------------------------------------------
+
+apache httpclient 4.5.14
+apache commons login 1.2
+apache core 4.4.16
+json un maven 2023
+apache commons io 2.15.0
+
+------------------------------------------------
+
+
+
+public class Bodega {
+    
+    int id ;
+    String nombre;
+
+producto
+    int id,cantidad,bodega_id;
+    String nombre;
+    double precio;
+
+------------------------
+
+Api-----------------------
+
+public class Api {
+    private final List<Producto> productos = new ArrayList<>();
+
+    public List<Producto> getProductosPorBodega(int numeroBodega) {
+        productos.clear();
+
+        try {
+    
+            String url = "http://localhost/Comercial/CRUD/servicios/api.php/productos?n_bodega=" + numeroBodega;
+            HttpClient httpClient = HttpClients.createDefault();
+            HttpGet request = new HttpGet(url);
+            HttpResponse response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                System.out.println("Error al realizar la solicitud HTTP. Código: " + response.getStatusLine().getStatusCode());
+                return productos;  // Retorna la lista vacía en caso de error
+            }
+
+            String responseBody = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+            JSONArray jsonArray = new JSONArray(responseBody);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                int id = jsonObject.getInt("id");
+                String nombre = jsonObject.getString("nombre");
+                double precio = jsonObject.getDouble("precio");
+                int cantidad = jsonObject.getInt("cantidad");
+                int bodega_id = jsonObject.getInt("bodega_id");
+
+                Producto producto = new Producto(id,nombre,precio,cantidad,bodega_id);
+                productos.add(producto);
+            }
+        } catch (IOException e) {
+            System.out.println("Error en el método getProductosPorBodega: " + e.getMessage());
+        }
+
+        return productos;
+    }
+}
+
+-------------------------------------Imain
+
+    private Api api;
+
+    public Imain() {
+        initComponents();
+        api = new Api();
+
+        btnBuscar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Obtener el número de bodega desde el JTextField
+                int numeroBodega = Integer.parseInt(txtNumeroBodega.getText());
+
+                // Realizar la búsqueda de productos por bodega
+                List<Producto> resultadoBusqueda = api.getProductosPorBodega(numeroBodega);
+
+                // Mostrar los resultados en la tabla
+                mostrarEnTabla(resultadoBusqueda);
+            }
+        });
+
+    }
+
+
+    private void mostrarEnTabla(List<Producto> productos) {
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("Nombre"); 
+        model.addColumn("Precio"); 
+        model.addColumn("Cantidad"); 
+        model.addColumn("Bodega"); 
+
+ for (Producto producto : productos) {
+            model.addRow(new Object[]{
+                producto.getNombre(),
+                producto.getPrecio(),
+                producto.getCantidad(),
+                producto.getBodega_id()
+                // Agrega más campos según sea necesario
+            });
+ }
+
+        tablaResultados.setModel(model);
+    }
+
+
+
+
+
+
+
