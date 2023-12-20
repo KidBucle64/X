@@ -1,0 +1,128 @@
+spring initializr.io
+
+maven project 
+
+java languaje
+
+war
+
+java 17
+
+Dependencias:
+Spring Web
+
+Spring data jpa
+
+mysql driver
+
+
+(Descargamos el archivo empaquetado)  y descomprimimos donde queramos
+
+
+
+Ahora en intelligent
+
+en el paquete .edu.ec....
+
+///en resoueces application properties///
+
+spring.datasource.url=jdbc:mysql://localhost:3306/uta
+spring.datasource.username=root
+spring.datasource.password=
+spring.jpa.show-sql=true
+
+server.port=40000
+
+
+//////////////////////////////////////////a nicel de com.uta.....
+
+
+controllers: ApiEstudiante JAVACLASS:
+
+adentro de aqui va el buscador
+
+
+/////models: Estudiante: JAVACLASS://///
+
+package com.uta.kidbucle.crudEjemplo.model;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="estudiante")
+public class Estudiante {
+
+
+    @Id
+    private String id_estudiante;
+    private String nombre_estudiante;
+    private String nombre_curso;
+    private String nombre_paralelo;
+
+
+    public Estudiante() {
+
+    }
+
+    public Estudiante(String id_estudiante, String nombre_estudiante, String nombre_curso, String nombre_paralelo) {
+        this.id_estudiante = id_estudiante;
+        this.nombre_estudiante = nombre_estudiante;
+        this.nombre_curso = nombre_curso;
+        this.nombre_paralelo = nombre_paralelo;
+    }
+
+    public String getId_estudiante() {
+        return id_estudiante;
+    }
+
+    public void setId_estudiante(String id_estudiante) {
+        this.id_estudiante = id_estudiante;
+    }
+
+    public String getNombre_estudiante() {
+        return nombre_estudiante;
+    }
+
+    public void setNombre_estudiante(String nombre_estudiante) {
+        this.nombre_estudiante = nombre_estudiante;
+    }
+
+    public String getNombre_curso() {
+        return nombre_curso;
+    }
+
+    public void setNombre_curso(String nombre_curso) {
+        this.nombre_curso = nombre_curso;
+    }
+
+    public String getNombre_paralelo() {
+        return nombre_paralelo;
+    }
+
+    public void setNombre_paralelo(String nombre_paralelo) {
+        this.nombre_paralelo = nombre_paralelo;
+    }
+}
+
+/////
+
+/////repositories: new Interface .java :Javaclass--> EstudianteRepository/////
+
+package com.uta.kidbucle.crudEjemplo.repositories;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.uta.kidbucle.crudEjemplo.model.Estudiante;
+
+@Repository
+public interface EstudianteRepository extends JpaRepository<Estudiante, String> {
+}
+
+
+
+
+
+
+
+
+
+
